@@ -1,5 +1,5 @@
-import "./css/bootstrap.min.css"
-import { Fragment } from "react/jsx-runtime";
+import "./css/bootstrap.min.css";
+import "./css/bootstrap-icons.min.css";
 
 function App() {
   return (
