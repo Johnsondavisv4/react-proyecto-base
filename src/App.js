@@ -1,11 +1,9 @@
 import "./css/bootstrap.min.css";
 import "./css/bootstrap-icons.min.css";
-import { Fragment } from "react";
+import { Steam } from "./components/Steam";
 
 function App() {
-  return (
-    <Fragment></Fragment>
-  );
+  return <Steam></Steam>;
 }
 
 export default App;
