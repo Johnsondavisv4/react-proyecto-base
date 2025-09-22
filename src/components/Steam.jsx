@@ -21,14 +21,16 @@ export function Steam() {
 
   const agregarJuego = () => {
     const inputJuegoTexto = inputJuego.current.value;
-    setJuegos((prevJuegos) => {
-      const nuevoJuego = {
-        id: uuidv4(),
-        titulo: inputJuegoTexto,
-      };
-      inputJuego.current.value = "";
-      return [...listadoJuegos, nuevoJuego];
-    });
+    if (inputJuegoTexto !== "") {
+      setJuegos((prevJuegos) => {
+        const nuevoJuego = {
+          id: uuidv4(),
+          titulo: inputJuegoTexto,
+        };
+        inputJuego.current.value = "";
+        return [...listadoJuegos, nuevoJuego];
+      });
+    }
   };
 
   return (
