@@ -11,10 +11,10 @@ export function Steam() {
   //useState = state que provee react para capturar estados
 
   const [listadoJuegos, setJuegos] = useState([
-    { id: 1, titulo: "AC Origin" },
-    { id: 2, titulo: "Silksong" },
-    { id: 3, titulo: "Doom Eternal" },
-    { id: 4, titulo: "Lies of P" },
+    { id: 1, titulo: "Hollow Knight" },
+    { id: 2, titulo: "Hollow Knight: Silksong" },
+    { id: 3, titulo: "God of War" },
+    { id: 4, titulo: "GTA V: Enhanced Edition" },
   ]);
 
   const inputJuego = useRef();
