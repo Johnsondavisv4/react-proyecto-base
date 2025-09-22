@@ -28,7 +28,7 @@ export function Steam() {
           titulo: inputJuegoTexto,
         };
         inputJuego.current.value = "";
-        return [...listadoJuegos, nuevoJuego];
+        return [...prevJuegos, nuevoJuego];
       });
     }
   };
