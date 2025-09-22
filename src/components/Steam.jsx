@@ -48,7 +48,7 @@ export function Steam() {
             placeholder="Ingrese el nombre del juego"
           />
           <button onClick={agregarJuego} className="btn btn-success">
-            <i class="bi bi-check"></i>
+            <i className="bi bi-check"></i>
           </button>
         </div>
 
