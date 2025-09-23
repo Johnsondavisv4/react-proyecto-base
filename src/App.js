@@ -1,11 +1,14 @@
+//Bootstrap
 import "./css/bootstrap.min.css";
-import "./css/bootstrap-icons.min.css";
-import { Fragment } from "react";
+//Estilos Dados
+import "./css/style.css";
+//Body sin auto e importacion de fuentes via CDN
+import "./css/style2.css";
+
+import { Container } from "./components/Container";
 
 function App() {
-  return (
-    <Fragment></Fragment>
-  );
+  return <Container></Container>;
 }
 
 export default App;
