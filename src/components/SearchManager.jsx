@@ -37,6 +37,11 @@ export function SearchManager() {
     }
   };
 
+  const handleSelectArtist = (id) => {
+    setArtista(id);
+    setArtistList([]);
+  };
+
   const searchArtist = (
     <div>
       <h1>{titulo}</h1>
@@ -51,13 +56,38 @@ export function SearchManager() {
           <i className="bi bi-search-heart"></i>
         </button>
       </div>
-      <ul className="list-group">
-        {artistList.map((artist) => (
-          <li key={artist.id} className="list-group-item">
-            {artist.name}
-          </li>
-        ))}
-      </ul>
+      <div className="album py-5">
+        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+          {artistList.map((artist) => (
+            <div className="col" key={artist.id} style={{ maxWidth: "250px" }}>
+              <div className="card shadow-sm">
+                <img
+                  className="bd-placeholder-img card-img-top"
+                  src={artist.picture_medium}
+                  alt={artist.name}
+                  height="250"
+                  width="250"
+                />
+                <div className="card-body">
+                  <p className="card-text d-flex justify-content-center">
+                    {artist.name}
+                  </p>
+                  <div className="d-flex justify-content-center">
+                    <div>
+                      <button
+                        onClick={() => handleSelectArtist(artist.id)}
+                        className="btn btn-sm btn-outline-primary"
+                      >
+                        Seleccionar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
