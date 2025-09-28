@@ -6,22 +6,24 @@ export type Artist = {
 
 export type ArtistSearchResponse = {
   data: Artist[];
-  total: number;
-  prev?: string | null;
-  next?: string | null;
 };
 
 export type Album = {
   id: number;
   title: string;
+  record_type?: string;
   cover_medium?: string;
+};
+
+export type RawAlbumListResponse = {
+  data: Album[];
+  total?: number;
+  prev?: string | null;
+  next?: string | null;
 };
 
 export type AlbumListResponse = {
   data: Album[];
-  total: number;
-  prev?: string | null;
-  next?: string | null;
 };
 
 export type Track = {
@@ -29,9 +31,13 @@ export type Track = {
   title: string;
 };
 
-export type TrackListResponse = {
+export type RawTrackListResponse = {
   data: Track[];
   total?: number;
   prev?: string | null;
   next?: string | null;
+};
+
+export type TrackListResponse = {
+  data: Track[];
 };
