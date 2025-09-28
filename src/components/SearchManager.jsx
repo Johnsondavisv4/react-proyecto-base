@@ -4,12 +4,12 @@ import DeezerService from "../services/deezer.service";
 
 export function SearchManager() {
   /*
-  Buscar al artista
-  Listar los resultados
-  Seleccionar un artista
-  Almacenarlo en artista
+  Buscar al artista ✓
+  Listar los resultados ✓
+  Seleccionar un artista ✓
+  Almacenarlo en artista ✓
   
-  Cambiar al Listado de TODOS los Albumes del Artista con un Selector de Formato
+  Cambiar al Listado de TODOS los Albumes del Artista con un Selector de Formato ✓
   Marcar Albums deseados
   Colocar un Boton de Descargar Seleccionados
   Generar los enlaces y Empezar Descargas  
