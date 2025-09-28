@@ -27,7 +27,6 @@ export function SearchManager() {
     if (input !== "") {
       try {
         const res = await DeezerService.searchArtist(input);
-        console.log(res);
         setArtistList(res.data);
       } catch (error) {
         console.error("Error buscando artistas:", error);
@@ -37,9 +36,11 @@ export function SearchManager() {
     }
   };
 
-  const handleSelectArtist = (id) => {
-    setArtista(id);
+  const handleSelectArtist = (artist) => {
+    setArtista(artist.id);
     setArtistList([]);
+    //llamar albumes a la API
+    setTitulo(`Listado de albumes de ${artist.name}`);
   };
 
   const searchArtist = (
@@ -75,7 +76,7 @@ export function SearchManager() {
                   <div className="d-flex justify-content-center">
                     <div>
                       <button
-                        onClick={() => handleSelectArtist(artist.id)}
+                        onClick={() => handleSelectArtist(artist)}
                         className="btn btn-sm btn-outline-primary"
                       >
                         Seleccionar
