@@ -20,7 +20,7 @@ export function SearchManager() {
   const [tracks, setTracks] = useState([]);
   const [titulo, setTitulo] = useState("Busca un artista");
 
-  const search = useRef();
+  const search = useRef(null);
 
   const handleSearchArtist = async () => {
     const input = search.current.value.trim();

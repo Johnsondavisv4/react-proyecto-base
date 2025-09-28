@@ -47,12 +47,14 @@ async function fetchDeezerJson(url, options = {}) {
 
   const payload = await tryParseJson(response);
 
+  const payloadError =
+    payload && typeof payload === "object"
+      ? /** @type {{ error?: { message?: string } }} */ (payload).error
+      : undefined;
+
   if (!response.ok) {
     const message =
-      (payload &&
-        typeof payload === "object" &&
-        payload.error &&
-        payload.error.message) ||
+      payloadError?.message ||
       response.statusText ||
       "Unknown Deezer API error";
 
