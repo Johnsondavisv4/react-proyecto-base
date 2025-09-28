@@ -17,8 +17,10 @@ export function SearchManager() {
   const [artistList, setArtistList] = useState([]);
   const [artista, setArtista] = useState("");
   const [albums, setAlbums] = useState([]);
+  const [albumSelect, setAlbumSelect] = useState(new Set());
   const [tracks, setTracks] = useState([]);
   const [titulo, setTitulo] = useState("Busca un artista");
+  const [format, setFormat] = useState("FLAC");
 
   const search = useRef(null);
 
@@ -36,16 +38,18 @@ export function SearchManager() {
     }
   };
 
-  const handleSelectArtist = (artist) => {
+  const handleSelectArtist = async (artist) => {
+    const res = await DeezerService.getArtistAlbums(artist.id);
+    setAlbums(res.data);
     setArtista(artist.id);
     setArtistList([]);
-    //llamar albumes a la API
     setTitulo(`Listado de albumes de ${artist.name}`);
   };
 
   const searchArtist = (
     <div>
       <h1>{titulo}</h1>
+      <hr />
       <div className="input-group">
         <input
           ref={search}
@@ -92,5 +96,61 @@ export function SearchManager() {
     </div>
   );
 
-  return searchArtist;
+  const selectAlbumfromArtist = (
+    <>
+      <h1>{titulo}</h1>
+      <hr />
+
+      <div>
+        <span className="form-label d-block mb-2">Formato</span>
+        <div className="d-flex align-items-center">
+          <div className="form-check form-check-inline">
+            <input
+              id="inputFLAC"
+              type="radio"
+              className="form-check-input"
+              name="Formato"
+              value="FLAC"
+              checked={format === "FLAC"}
+              onChange={() => setFormat("FLAC")}
+            />
+            <label className="form-check-label" htmlFor="inputFLAC">
+              FLAC
+            </label>
+          </div>
+
+          <div className="form-check form-check-inline">
+            <input
+              id="inputMP3"
+              type="radio"
+              className="form-check-input"
+              name="Formato"
+              value="MP3"
+              checked={format === "MP3"}
+              onChange={() => setFormat("MP3")}
+            />
+            <label className="form-check-label" htmlFor="inputMP3">
+              MP3
+            </label>
+          </div>
+
+          <button className="btn btn-success ms-auto">
+            <i className="bi bi-cloud-arrow-down-fill"></i> Descargar álbumes
+            seleccionados
+          </button>
+        </div>
+      </div>
+      <br />
+      <p>Listado de Prueba</p>
+      <ul className="listgroup">
+        {albums.map((album) => (
+          <li className="list-group-item" key={album.id}>
+            {album.title}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+
+  return artista === "" ? searchArtist : selectAlbumfromArtist;
 }
