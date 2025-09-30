@@ -62,7 +62,10 @@ export function SearchManager() {
         </button>
       </div>
       <div className="album py-5">
-        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+        <div
+          className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3"
+          style={{ justifyContent: "center" }}
+        >
           {artistList.map((artist) => (
             <div className="col" key={artist.id} style={{ maxWidth: "250px" }}>
               <div className="card shadow-sm">
