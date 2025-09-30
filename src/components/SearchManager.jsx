@@ -46,6 +46,10 @@ export function SearchManager() {
     setTitulo(`Listado de albumes de ${artist.name}`);
   };
 
+  const handleSelectAlbum = (album) => {
+    alert(`Album ${album.title} (${album.id}) agregado`);
+  };
+
   const searchArtist = (
     <div>
       <h1>{titulo}</h1>
@@ -144,14 +148,41 @@ export function SearchManager() {
         </div>
       </div>
       <br />
-      <p>Listado de Prueba</p>
-      <ul className="listgroup">
-        {albums.map((album) => (
-          <li className="list-group-item" key={album.id}>
-            {album.title}
-          </li>
-        ))}
-      </ul>
+      <div>
+        <div
+          className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3"
+          style={{ justifyContent: "center" }}
+        >
+          {albums.map((album) => (
+            <div className="col" key={album.id} style={{ maxWidth: "250px" }}>
+              <div className="card shadow-sm">
+                <img
+                  className="bd-placeholder-img card-img-top"
+                  src={album.cover_medium}
+                  alt={album.title}
+                  height="250"
+                  width="250"
+                />
+                <div className="card-body">
+                  <p className="card-text d-flex justify-content-center">
+                    {album.title}
+                  </p>
+                  <div className="d-flex justify-content-center">
+                    <div>
+                      <button
+                        onClick={() => handleSelectAlbum(album)}
+                        className="btn btn-sm btn-outline-primary"
+                      >
+                        Añadir Album
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </>
   );
 
