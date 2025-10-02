@@ -39,7 +39,6 @@ export function SearchManager() {
     tracks = [];
   };
 
-  // helper: formatea Date o string a dd-mm-aaaa
   const formatDate = (value) => {
     const date = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(date.getTime())) return "";
