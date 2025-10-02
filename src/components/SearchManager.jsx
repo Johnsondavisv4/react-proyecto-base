@@ -12,7 +12,9 @@ export function SearchManager() {
   Cambiar al Listado de TODOS los Albumes del Artista con un Selector de Formato ✓
   Marcar Albums deseados ✓
   Colocar un Boton de Descargar Seleccionados ✓
-  Generar los enlaces y Empezar Descargas  
+  Generar los enlaces ✓
+  Conectar a jdownloader
+  Empezar Descargas  
   */
   const [artistList, setArtistList] = useState([]);
   const [artista, setArtista] = useState("");
@@ -25,7 +27,7 @@ export function SearchManager() {
   const search = useRef(null);
 
   let albumSelect = new Set();
-  let tracks;
+  let links;
 
   const handleBack = () => {
     setAlbums([]);
@@ -36,7 +38,7 @@ export function SearchManager() {
     setTitulo("Busca un artista");
     setFormat("FLAC");
     albumSelect = new Set();
-    tracks = [];
+    links = [];
   };
 
   const formatDate = (value) => {
@@ -91,11 +93,24 @@ export function SearchManager() {
     setTitulo(`Listado de albumes de ${artist.name}`);
   };
 
-  const handleDownload = () => {
-    tracks = [];
-    albumSelect.forEach(async (albumId) => {
-      tracks.push(...(await DeezerService.getAlbumTracks(albumId)).data);
+  const handleDownload = async () => {
+    links = [];
+    for (const albumId of albumSelect) {
+      const albumLinks = await mapLinks(albumId);
+      links.push(...albumLinks);
+    }
+    //Conectar a Jdownloader
+  };
+
+  const mapLinks = async (e) => {
+    let tracks = (await DeezerService.getAlbumTracks(e)).data;
+    let link = [];
+    tracks.map((e) => {
+      link.push(
+        `https://flacdownloader.com/flac/download?t=${e.id}&f=${format}`
+      );
     });
+    return link;
   };
 
   const searchArtist = (
