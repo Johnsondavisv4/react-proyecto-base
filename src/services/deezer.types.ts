@@ -11,6 +11,7 @@ export type ArtistSearchResponse = {
 export type Album = {
   id: number;
   title: string;
+  release_date: Date;
   record_type?: string;
   cover_medium?: string;
 };

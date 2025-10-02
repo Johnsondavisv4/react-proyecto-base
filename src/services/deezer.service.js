@@ -114,6 +114,7 @@ function mapAlbum(album) {
   return {
     id: album.id,
     title: album.title,
+    release_date: new Date(album.release_date),
     record_type: album.record_type,
     cover_medium: album.cover_medium,
   };

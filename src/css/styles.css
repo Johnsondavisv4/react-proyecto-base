@@ -11,11 +11,13 @@ body {
   -moz-user-select: none;
   user-select: none;
 }
+
 @media (min-width: 768px) {
   .bd-placeholder-img-lg {
     font-size: 3.5rem;
   }
 }
+
 .b-example-divider {
   width: 100%;
   height: 3rem;
@@ -24,21 +26,25 @@ body {
   border-width: 1px 0;
   box-shadow: inset 0 0.5em 1.5em #0000001a, inset 0 0.125em 0.5em #00000026;
 }
+
 .b-example-vr {
   flex-shrink: 0;
   width: 1.5rem;
   height: 100vh;
 }
+
 .bi {
   vertical-align: -0.125em;
   fill: currentColor;
 }
+
 .nav-scroller {
   position: relative;
   z-index: 2;
   height: 2.75rem;
   overflow-y: hidden;
 }
+
 .nav-scroller .nav {
   display: flex;
   flex-wrap: nowrap;
@@ -49,6 +55,7 @@ body {
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
 }
+
 .btn-bd-primary {
   --bd-violet-bg: #712cf9;
   --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
@@ -64,13 +71,70 @@ body {
   --bs-btn-active-bg: #5a23c8;
   --bs-btn-active-border-color: #5a23c8;
 }
+
 .bd-mode-toggle {
   z-index: 1500;
 }
+
 .bd-mode-toggle .bi {
   width: 1em;
   height: 1em;
 }
+
 .bd-mode-toggle .dropdown-menu .active .bi {
   display: block !important;
+}
+
+
+.cover-md {
+  height: 125px;
+  width: 125px;
+}
+
+.album-name {
+  color: #314047;
+  -webkit-transition: all .5s ease;
+  transition: all .5s ease;
+}
+
+a {
+  color: #02af74;
+  text-decoration: none;
+}
+
+.select-album a {
+  display: inline-block;
+  text-align: center;
+  border: 1px solid #eff0f2;
+  border-radius: 6px;
+  color: rgba(173, 181, 189, .55);
+  -webkit-transition: all .5s ease;
+  transition: all .5s ease;
+  justify-content: center;
+
+}
+
+.album-list-box {
+  position: relative;
+}
+
+.album-list-box .select-album {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%) scale(1.6);
+  transform-origin: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin-right: 20px;
+}
+
+.album-list-box .select-artista {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
 }
