@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Fragment, useRef, useState } from "react";
 import DeezerService from "../services/deezer.service";
+import JDownloaderService from "../services/jdownloader.service";
 
 export function SearchManager() {
   /*
@@ -25,9 +26,25 @@ export function SearchManager() {
   const [format, setFormat] = useState("FLAC");
 
   const search = useRef(null);
+  const albumSelect = useRef(new Map());
 
-  let albumSelect = new Set();
-  let links;
+  useEffect(() => {
+    const connect = async () => {
+      try {
+        await JDownloaderService.login();
+      } catch (error) {
+        alert(`Error iniciando sesión en JDownloader: ${error}`);
+      }
+    };
+
+    connect();
+
+    return () => {
+      JDownloaderService.disconnect().catch((error) => {
+        alert(`Error cerrando sesión en JDownloader: ${error}`);
+      });
+    };
+  }, []);
 
   const handleBack = () => {
     setAlbums([]);
@@ -37,8 +54,7 @@ export function SearchManager() {
     setArtistList([]);
     setTitulo("Busca un artista");
     setFormat("FLAC");
-    albumSelect = new Set();
-    links = [];
+    albumSelect.current = new Map();
   };
 
   const formatDate = (value) => {
@@ -94,23 +110,29 @@ export function SearchManager() {
   };
 
   const handleDownload = async () => {
-    links = [];
-    for (const albumId of albumSelect) {
-      const albumLinks = await mapLinks(albumId);
-      links.push(...albumLinks);
-    }
-    //Conectar a Jdownloader
-  };
+    let links;
+    let tracks;
+    for (const album of albumSelect.current.values()) {
+      links = [];
+      tracks = (await DeezerService.getAlbumTracks(album.id)).data;
+      tracks.map((e) => {
+        links.push(
+          `https://flacdownloader.com/flac/download?t=${e.id}&f=${format}`
+        );
+      });
 
-  const mapLinks = async (e) => {
-    let tracks = (await DeezerService.getAlbumTracks(e)).data;
-    let link = [];
-    tracks.map((e) => {
-      link.push(
-        `https://flacdownloader.com/flac/download?t=${e.id}&f=${format}`
-      );
-    });
-    return link;
+      try {
+        await JDownloaderService.addLinks({
+          links: links,
+          packageName: `${album.title} [${format}]`,
+          autostart: false,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (error) {
+        console.error(`Error enviando "${album.title}" a JDownloader:`, error);
+        throw error;
+      }
+    }
   };
 
   const searchArtist = (
@@ -258,8 +280,11 @@ export function SearchManager() {
                     id={`select-album-${album.id}`}
                     onChange={(e) => {
                       e.target.checked
-                        ? albumSelect.add(album.id)
-                        : albumSelect.delete(album.id);
+                        ? albumSelect.current.set(album.id, {
+                            id: album.id,
+                            title: album.title,
+                          })
+                        : albumSelect.current.delete(album.id);
                     }}
                   />
                 </div>
@@ -303,8 +328,11 @@ export function SearchManager() {
                     id={`select-album-${album.id}`}
                     onChange={(e) => {
                       e.target.checked
-                        ? albumSelect.add(album.id)
-                        : albumSelect.delete(album.id);
+                        ? albumSelect.current.set(album.id, {
+                            id: album.id,
+                            title: album.title,
+                          })
+                        : albumSelect.current.delete(album.id);
                     }}
                     style={{ marginRight: "20px" }}
                   />
@@ -349,8 +377,11 @@ export function SearchManager() {
                     id={`select-album-${album.id}`}
                     onChange={(e) => {
                       e.target.checked
-                        ? albumSelect.add(album.id)
-                        : albumSelect.delete(album.id);
+                        ? albumSelect.current.set(album.id, {
+                            id: album.id,
+                            title: album.title,
+                          })
+                        : albumSelect.current.delete(album.id);
                     }}
                     style={{ marginRight: "20px" }}
                   />
