@@ -5,218 +5,213 @@
  * @typedef {import('./deezer.types').ArtistSearchResponse} ArtistSearchResponse
  * @typedef {import('./deezer.types').AlbumListResponse} AlbumListResponse
  * @typedef {import('./deezer.types').TrackListResponse} TrackListResponse
- * @typedef {import('./deezer.types').RawAlbumListResponse} RawAlbumListResponse
- * @typedef {import('./deezer.types').RawTrackListResponse} RawTrackListResponse
  */
 
 const API_BASE_URL = "https://api.deezer.com";
 const CORS_PROXY = "https://corsproxy.io/?";
 const MAX_PAGE_DEPTH = 25;
 
-/**
- * @param {string} url
- * @returns {string}
- */
-const withProxy = (url) => `${CORS_PROXY}${encodeURIComponent(url)}`;
-
-/**
- * @param {Response} response
- * @returns {Promise<unknown>}
- */
-async function tryParseJson(response) {
-  try {
-    return await response.json();
-  } catch (error) {
-    return null;
-  }
-}
-
-/**
- * @param {string} url
- * @param {{ signal?: AbortSignal }} [options]
- * @returns {Promise<any>}
- */
-async function fetchDeezerJson(url, options = {}) {
-  const response = await fetch(withProxy(url), {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
-    signal: options.signal,
-  });
-
-  const payload = await tryParseJson(response);
-
-  const payloadError =
-    payload && typeof payload === "object"
-      ? /** @type {{ error?: { message?: string } }} */ (payload).error
-      : undefined;
-
-  if (!response.ok) {
-    const message =
-      payloadError?.message ||
-      response.statusText ||
-      "Unknown Deezer API error";
-
-    throw new Error(`Deezer request failed (${response.status}): ${message}`);
+class DeezerService {
+  constructor() {
+    this.apiBaseUrl = API_BASE_URL;
+    this.corsProxy = CORS_PROXY;
+    this.maxPageDepth = MAX_PAGE_DEPTH;
   }
 
-  return payload ?? {};
-}
+  /**
+   * @param {string} url
+   * @returns {string}
+   */
+  withProxy(url) {
+    return `${this.corsProxy}${encodeURIComponent(url)}`;
+  }
 
-/**
- * @template TItem
- * @param {string} initialUrl
- * @param {{ signal?: AbortSignal }} [options]
- * @returns {Promise<TItem[]>}
- */
-async function collectPaginated(initialUrl, options = {}) {
-  const items = [];
-  let nextUrl = initialUrl;
-  let depth = 0;
+  /**
+   * @param {Response} response
+   * @returns {Promise<unknown>}
+   */
+  async tryParseJson(response) {
+    try {
+      return await response.json();
+    } catch (error) {
+      return null;
+    }
+  }
 
-  while (nextUrl && depth < MAX_PAGE_DEPTH) {
-    depth += 1;
-    /** @type {{ data?: TItem[]; next?: string | null }} */
-    const page = await fetchDeezerJson(nextUrl, options);
+  /**
+   * @param {string} url
+   * @param {{ signal?: AbortSignal }} [options]
+   * @returns {Promise<any>}
+   */
+  async fetchDeezerJson(url, options = {}) {
+    const response = await fetch(this.withProxy(url), {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      signal: options.signal,
+    });
 
-    if (Array.isArray(page.data)) {
-      items.push(...page.data);
+    const payload = await this.tryParseJson(response);
+
+    const payloadError =
+      payload && typeof payload === "object"
+        ? /** @type {{ error?: { message?: string } }} */ (payload).error
+        : undefined;
+
+    if (!response.ok) {
+      const message =
+        payloadError?.message ||
+        response.statusText ||
+        "Unknown Deezer API error";
+
+      throw new Error(`Deezer request failed (${response.status}): ${message}`);
     }
 
-    if (!page.next) {
-      break;
+    return payload ?? {};
+  }
+
+  /**
+   * @template TItem
+   * @param {string} initialUrl
+   * @param {{ signal?: AbortSignal }} [options]
+   * @returns {Promise<TItem[]>}
+   */
+  async collectPaginated(initialUrl, options = {}) {
+    const items = [];
+    let nextUrl = initialUrl;
+    let depth = 0;
+
+    while (nextUrl && depth < this.maxPageDepth) {
+      depth += 1;
+      /** @type {{ data?: TItem[]; next?: string | null }} */
+      const page = await this.fetchDeezerJson(nextUrl, options);
+
+      if (Array.isArray(page.data)) {
+        items.push(...page.data);
+      }
+
+      if (!page.next) {
+        break;
+      }
+
+      nextUrl = page.next;
     }
 
-    nextUrl = page.next;
+    return items;
   }
 
-  return items;
-}
-
-/**
- * @param {any} artist
- * @returns {Artist}
- */
-function mapArtist(artist) {
-  return {
-    id: artist.id,
-    name: artist.name,
-    picture_medium: artist.picture_medium,
-  };
-}
-
-/**
- * @param {any} album
- * @returns {Album}
- */
-function mapAlbum(album) {
-  return {
-    id: album.id,
-    title: album.title,
-    release_date: new Date(album.release_date),
-    record_type: album.record_type,
-    cover_medium: album.cover_medium,
-  };
-}
-
-/**
- * @param {any} track
- * @returns {Track}
- */
-function mapTrack(track) {
-  return {
-    id: track.id,
-    title: track.title,
-  };
-}
-
-/**
- * @param {string} query
- * @param {{ signal?: AbortSignal }} [options]
- * @returns {Promise<ArtistSearchResponse>}
- */
-async function searchArtist(query, options = {}) {
-  const trimmed = (query ?? "").trim();
-
-  if (!trimmed) {
-    return { data: [] };
+  /**
+   * @param {any} artist
+   * @returns {Artist}
+   */
+  mapArtist(artist) {
+    return {
+      id: artist.id,
+      name: artist.name,
+      picture_medium: artist.picture_medium,
+    };
   }
 
-  const url = `${API_BASE_URL}/search/artist?q=${encodeURIComponent(trimmed)}`;
-  /** @type {{ data?: any[] }} */
-  const raw = await fetchDeezerJson(url, options);
-
-  const data = Array.isArray(raw.data) ? raw.data.map(mapArtist) : [];
-
-  return { data };
-}
-
-/**
- * @param {number} artistId
- * @param {{ signal?: AbortSignal }} [options]
- * @returns {Promise<AlbumListResponse>}
- */
-async function getArtistAlbums(artistId, options = {}) {
-  if (!Number.isFinite(artistId)) {
-    throw new Error("artistId must be a finite number");
+  /**
+   * @param {any} album
+   * @returns {Album}
+   */
+  mapAlbum(album) {
+    return {
+      id: album.id,
+      title: album.title,
+      release_date: new Date(album.release_date),
+      record_type: album.record_type,
+      cover_medium: album.cover_medium,
+    };
   }
 
-  const url = `${API_BASE_URL}/artist/${artistId}/albums`;
-  const rawAlbums = await collectPaginated(url, options);
-
-  const data = rawAlbums.map(mapAlbum);
-
-  return { data };
-}
-
-/**
- * @param {number} albumId
- * @param {{ signal?: AbortSignal }} [options]
- * @returns {Promise<TrackListResponse>}
- */
-async function getAlbumTracks(albumId, options = {}) {
-  if (!Number.isFinite(albumId)) {
-    throw new Error("albumId must be a finite number");
+  /**
+   * @param {any} track
+   * @returns {Track}
+   */
+  mapTrack(track) {
+    return {
+      id: track.id,
+      title: track.title,
+    };
   }
 
-  const url = `${API_BASE_URL}/album/${albumId}/tracks`;
-  const rawTracks = await collectPaginated(url, options);
+  /**
+   * @param {string} query
+   * @param {{ signal?: AbortSignal }} [options]
+   * @returns {Promise<ArtistSearchResponse>}
+   */
+  async searchArtist(query, options = {}) {
+    const trimmed = (query ?? "").trim();
 
-  const data = rawTracks.map(mapTrack);
+    if (!trimmed) {
+      return { data: [] };
+    }
 
-  return { data };
+    const url = `${this.apiBaseUrl}/search/artist?q=${encodeURIComponent(
+      trimmed
+    )}`;
+    /** @type {{ data?: any[] }} */
+    const raw = await this.fetchDeezerJson(url, options);
+
+    const data = Array.isArray(raw.data)
+      ? raw.data.map((a) => this.mapArtist(a))
+      : [];
+
+    return { data };
+  }
+
+  /**
+   * @param {number} artistId
+   * @param {{ signal?: AbortSignal }} [options]
+   * @returns {Promise<AlbumListResponse>}
+   */
+  async getArtistAlbums(artistId, options = {}) {
+    if (!Number.isFinite(artistId)) {
+      throw new Error("artistId must be a finite number");
+    }
+
+    const url = `${this.apiBaseUrl}/artist/${artistId}/albums`;
+    const rawAlbums = await this.collectPaginated(url, options);
+
+    const data = rawAlbums.map((a) => this.mapAlbum(a));
+
+    return { data };
+  }
+
+  /**
+   * @param {number} albumId
+   * @param {{ signal?: AbortSignal }} [options]
+   * @returns {Promise<TrackListResponse>}
+   */
+  async getAlbumTracks(albumId, options = {}) {
+    if (!Number.isFinite(albumId)) {
+      throw new Error("albumId must be a finite number");
+    }
+
+    const url = `${this.apiBaseUrl}/album/${albumId}/tracks`;
+    const rawTracks = await this.collectPaginated(url, options);
+
+    const data = rawTracks.map((t) => this.mapTrack(t));
+
+    return { data };
+  }
+
+  /**
+   * @returns {string}
+   */
+  getApiBaseUrl() {
+    return this.apiBaseUrl;
+  }
+
+  /**
+   * @returns {string}
+   */
+  getCorsProxy() {
+    return this.corsProxy;
+  }
 }
 
-/**
- * @returns {typeof API_BASE_URL}
- */
-function getApiBaseUrl() {
-  return API_BASE_URL;
-}
-
-/**
- * @returns {typeof CORS_PROXY}
- */
-function getCorsProxy() {
-  return CORS_PROXY;
-}
-
-const DeezerService = Object.freeze({
-  searchArtist,
-  getArtistAlbums,
-  getAlbumTracks,
-  getApiBaseUrl,
-  getCorsProxy,
-});
-
-export default DeezerService;
-export {
-  API_BASE_URL,
-  CORS_PROXY,
-  searchArtist,
-  getArtistAlbums,
-  getAlbumTracks,
-  getApiBaseUrl,
-  getCorsProxy,
-};
+export default new DeezerService();
