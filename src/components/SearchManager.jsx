@@ -88,7 +88,7 @@ export function SearchManager() {
     res.data.sort(
       (a, b) => b.release_date.getTime() - a.release_date.getTime()
     );
-    res.data.map((res) => {
+    res.data.forEach((res) => {
       switch (res.record_type) {
         case "album":
           albums.push(res);
@@ -98,6 +98,8 @@ export function SearchManager() {
           break;
         case "single":
           singles.push(res);
+          break;
+        default:
           break;
       }
     });
@@ -110,12 +112,11 @@ export function SearchManager() {
   };
 
   const handleDownload = async () => {
-    let links;
     let tracks;
     for (const album of albumSelect.current.values()) {
-      links = [];
+      let links = [];
       tracks = (await DeezerService.getAlbumTracks(album.id)).data;
-      tracks.map((e) => {
+      tracks.forEach((e) => {
         links.push(
           `https://flacdownloader.com/flac/download?t=${e.id}&f=${format}`
         );
@@ -170,7 +171,7 @@ export function SearchManager() {
                 <div className="col-lg-5">
                   <div className="album-list-content mt-3 mt-lg-0">
                     <h5 className="mb-0">
-                      <a className="album-name">{artist.name}</a>
+                      <span className="album-name">{artist.name}</span>
                     </h5>
                   </div>
                 </div>
@@ -266,7 +267,7 @@ export function SearchManager() {
                     <div className="col-lg-5">
                       <div className="album-list-content mt-3 mt-lg-0">
                         <h5 className="mb-0">
-                          <a className="album-name">{album.title}</a>
+                          <span className="album-name">{album.title}</span>
                         </h5>
                         <p className="text-muted mb-0">
                           {formatDate(album.release_date)}
@@ -314,7 +315,7 @@ export function SearchManager() {
                     <div className="col-lg-5">
                       <div className="album-list-content mt-3 mt-lg-0">
                         <h5 className="mb-0">
-                          <a className="album-name">{album.title}</a>
+                          <span className="album-name">{album.title}</span>
                         </h5>
                         <p className="text-muted mb-0">
                           {formatDate(album.release_date)}
@@ -363,7 +364,7 @@ export function SearchManager() {
                     <div className="col-lg-5">
                       <div className="album-list-content mt-3 mt-lg-0">
                         <h5 className="mb-0">
-                          <a className="album-name">{album.title}</a>
+                          <span className="album-name">{album.title}</span>
                         </h5>
                         <p className="text-muted mb-0">
                           {formatDate(album.release_date)}

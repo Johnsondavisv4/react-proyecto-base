@@ -214,4 +214,5 @@ class DeezerService {
   }
 }
 
-export default new DeezerService();
+const deezerServiceInstance = new DeezerService();
+export default deezerServiceInstance;
