@@ -78,24 +78,50 @@ class DeezerService {
    * @returns {Promise<TItem[]>}
    */
   async collectPaginated(initialUrl, options = {}) {
-    const items = [];
-    let nextUrl = initialUrl;
-    let depth = 0;
+    // Primera consulta para obtener el total
+    /** @type {{ data?: TItem[]; total?: number; next?: string | null }} */
+    const firstPage = await this.fetchDeezerJson(initialUrl, options);
 
-    while (nextUrl && depth < this.maxPageDepth) {
-      depth += 1;
-      /** @type {{ data?: TItem[]; next?: string | null }} */
-      const page = await this.fetchDeezerJson(nextUrl, options);
+    if (!Array.isArray(firstPage.data)) {
+      return [];
+    }
 
+    const items = [...firstPage.data];
+    const total = firstPage.total ?? 0;
+    const pageSize = 25;
+
+    // Si no hay más páginas, retornar directamente
+    if (total <= pageSize) {
+      return items;
+    }
+
+    // Calcular cantidad de páginas adicionales necesarias
+    const totalPages = Math.ceil(total / pageSize);
+    const additionalPages = totalPages - 1; // Ya tenemos la primera página
+
+    // Limitar al máximo de páginas permitido
+    const pagesToFetch = Math.min(additionalPages, this.maxPageDepth - 1);
+
+    // Crear URLs para las páginas restantes
+    const baseUrl = initialUrl.includes("?")
+      ? `${initialUrl}&index=`
+      : `${initialUrl}?index=`;
+
+    const pagePromises = [];
+    for (let i = 1; i <= pagesToFetch; i++) {
+      const index = i * pageSize;
+      const url = `${baseUrl}${index}`;
+      pagePromises.push(this.fetchDeezerJson(url, options));
+    }
+
+    // Ejecutar todas las consultas en paralelo
+    const pages = await Promise.all(pagePromises);
+
+    // Agregar los datos de todas las páginas
+    for (const page of pages) {
       if (Array.isArray(page.data)) {
         items.push(...page.data);
       }
-
-      if (!page.next) {
-        break;
-      }
-
-      nextUrl = page.next;
     }
 
     return items;
