@@ -14,8 +14,8 @@ export function SearchManager() {
   Marcar Albums deseados ✓
   Colocar un Boton de Descargar Seleccionados ✓
   Generar los enlaces ✓
-  Conectar a jdownloader
-  Empezar Descargas  
+  Conectar a jdownloader ✓
+  Empezar Descargas  ✓
   */
   const [artistList, setArtistList] = useState([]);
   const [artista, setArtista] = useState("");
