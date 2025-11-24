@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Fragment, useRef, useState } from "react";
-import DeezerService from "../services/deezer.service";
-import JDownloaderService from "../services/jdownloader.service";
+import DeezerService from "@services/deezer.service";
+import JDownloaderService from "@services/jdownloader.service";
 
 export function SearchManager() {
   /*
