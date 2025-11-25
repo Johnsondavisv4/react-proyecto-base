@@ -19,6 +19,7 @@ export function AlbumSelectionView({
   eps,
   singles,
   onAlbumToggle,
+  isDownloading,
 }) {
   const renderSection = (title, items) => {
     if (!items || items.length === 0) return null;
@@ -112,8 +113,23 @@ export function AlbumSelectionView({
             </label>
           </div>
 
-          <button onClick={handleDownload} className="btn btn-success ms-auto">
-            <i className="bi bi-download"> Descargar álbumes seleccionados</i>
+          <button
+            onClick={handleDownload}
+            className="btn btn-success ms-auto"
+            disabled={isDownloading}
+          >
+            {isDownloading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Enviando...
+              </>
+            ) : (
+              <i className="bi bi-download"> Descargar álbumes seleccionados</i>
+            )}
           </button>
         </div>
       </div>

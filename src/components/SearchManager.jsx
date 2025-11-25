@@ -12,6 +12,7 @@ export function SearchManager() {
   const [eps, setEps] = useState([]);
   const [titulo, setTitulo] = useState("Busca un artista");
   const [format, setFormat] = useState("FLAC");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const search = useRef(null);
   const albumSelect = useRef(new Map());
@@ -104,6 +105,7 @@ export function SearchManager() {
   };
 
   const handleDownload = async () => {
+    setIsDownloading(true);
     let tracks;
     for (const album of albumSelect.current.values()) {
       let links = [];
@@ -127,6 +129,7 @@ export function SearchManager() {
       }
     }
     alert("Proceso de envío finalizado.");
+    setIsDownloading(false);
   };
 
   if (artista === "") {
@@ -152,6 +155,7 @@ export function SearchManager() {
       eps={eps}
       singles={singles}
       onAlbumToggle={handleAlbumToggle}
+      isDownloading={isDownloading}
     />
   );
 }
