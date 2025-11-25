@@ -1,22 +1,10 @@
-import React, { useEffect } from "react";
-import { Fragment, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import DeezerService from "@services/deezer.service";
 import JDownloaderService from "@services/jdownloader.service";
+import { ArtistSearchView } from "./ArtistSearchView";
+import { AlbumSelectionView } from "./AlbumSelectionView";
 
 export function SearchManager() {
-  /*
-  Buscar al artista ✓
-  Listar los resultados ✓
-  Seleccionar un artista ✓
-  Almacenarlo en artista ✓
-  
-  Cambiar al Listado de TODOS los Albumes del Artista con un Selector de Formato ✓
-  Marcar Albums deseados ✓
-  Colocar un Boton de Descargar Seleccionados ✓
-  Generar los enlaces ✓
-  Conectar a jdownloader ✓
-  Empezar Descargas  ✓
-  */
   const [artistList, setArtistList] = useState([]);
   const [artista, setArtista] = useState("");
   const [albums, setAlbums] = useState([]);
@@ -57,15 +45,6 @@ export function SearchManager() {
     albumSelect.current = new Map();
   };
 
-  const formatDate = (value) => {
-    const date = value instanceof Date ? value : new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    const dd = String(date.getDate()).padStart(2, "0");
-    const mm = String(date.getMonth() + 1).padStart(2, "0");
-    const yyyy = date.getFullYear();
-    return `${dd}-${mm}-${yyyy}`;
-  };
-
   const handleSearchArtist = async () => {
     const input = search.current.value.trim();
     if (input !== "") {
@@ -82,318 +61,97 @@ export function SearchManager() {
 
   const handleSelectArtist = async (artist) => {
     const res = await DeezerService.getArtistAlbums(artist.id);
-    let albums = [];
-    let eps = [];
-    let singles = [];
+    let albumsArr = [];
+    let epsArr = [];
+    let singlesArr = [];
+
     res.data.sort(
       (a, b) => b.release_date.getTime() - a.release_date.getTime()
     );
     res.data.forEach((res) => {
       switch (res.record_type) {
         case "album":
-          albums.push(res);
+          albumsArr.push(res);
           break;
         case "ep":
-          eps.push(res);
+          epsArr.push(res);
           break;
         case "single":
-          singles.push(res);
+          singlesArr.push(res);
           break;
         default:
           break;
       }
     });
-    setAlbums(albums);
-    setSingles(singles);
-    setEps(eps);
+
+    setAlbums(albumsArr);
+    setSingles(singlesArr);
+    setEps(epsArr);
     setArtista(artist.id);
     setArtistList([]);
     setTitulo(`Listado de albumes de ${artist.name}`);
+  };
+
+  const handleAlbumToggle = (album, isChecked) => {
+    if (isChecked) {
+      albumSelect.current.set(album.id, {
+        id: album.id,
+        title: album.title,
+      });
+    } else {
+      albumSelect.current.delete(album.id);
+    }
   };
 
   const handleDownload = async () => {
     let tracks;
     for (const album of albumSelect.current.values()) {
       let links = [];
-      tracks = (await DeezerService.getAlbumTracks(album.id)).data;
-      tracks.forEach((e) => {
-        links.push(
-          `https://flacdownloader.com/flac/download?t=${e.id}&f=${format}`
-        );
-      });
-
       try {
+        tracks = (await DeezerService.getAlbumTracks(album.id)).data;
+        tracks.forEach((e) => {
+          links.push(
+            `https://flacdownloader.com/flac/download?t=${e.id}&f=${format}`
+          );
+        });
+
         await JDownloaderService.addLinks({
           links: links,
           packageName: `${album.title} [${format}]`,
           autostart: false,
         });
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
-        console.error(`Error enviando "${album.title}" a JDownloader:`, error);
-        throw error;
+        console.error(`Error procesando "${album.title}":`, error);
+        alert(`Hubo un error al procesar el álbum: ${album.title}`);
       }
     }
+    alert("Proceso de envío finalizado.");
   };
 
-  const searchArtist = (
-    <div>
-      <div className="position-relative mb-3">
-        <h1 className="text-center w-100 m-0">{titulo}</h1>
-      </div>
-      <hr />
-      <div className="input-group">
-        <input
-          ref={search}
-          type="text"
-          className="form-control"
-          placeholder="Ingrese el nombre del artista que quiere buscar"
-        />
-        <button onClick={handleSearchArtist} className="btn btn-success">
-          <i className="bi bi-search-heart"></i>
-        </button>
-      </div>
+  if (artista === "") {
+    return (
+      <ArtistSearchView
+        titulo={titulo}
+        searchRef={search}
+        handleSearchArtist={handleSearchArtist}
+        artistList={artistList}
+        handleSelectArtist={handleSelectArtist}
+      />
+    );
+  }
 
-      <div className="container py-5">
-        <div className="row" style={{ rowGap: "10px" }}>
-          {artistList.map((artist) => (
-            <div className="album-list album-list-box card p-4" key={artist.id}>
-              <div className="align-items-center row">
-                <div className="col-auto">
-                  <div className="album-list-images">
-                    <img
-                      src={artist.picture_medium}
-                      alt={artist.name}
-                      className="cover-md img-thumbnail"
-                    />
-                  </div>
-                </div>
-                <div className="col-lg-5">
-                  <div className="album-list-content mt-3 mt-lg-0">
-                    <h5 className="mb-0">
-                      <span className="album-name">{artist.name}</span>
-                    </h5>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => handleSelectArtist(artist)}
-                className="select-artista btn btn-sm btn-outline-primary"
-              >
-                Seleccionar
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+  return (
+    <AlbumSelectionView
+      titulo={titulo}
+      handleBack={handleBack}
+      format={format}
+      setFormat={setFormat}
+      handleDownload={handleDownload}
+      albums={albums}
+      eps={eps}
+      singles={singles}
+      onAlbumToggle={handleAlbumToggle}
+    />
   );
-
-  const selectAlbumfromArtist = (
-    <>
-      <div className="position-relative mb-3">
-        <button
-          onClick={handleBack}
-          className="btn btn-outline-secondary position-absolute start-0"
-          style={{ transform: "translateY(2px)" }}
-        >
-          <i className="bi bi-arrow-left-circle-fill"> Volver</i>
-        </button>
-
-        <h1 className="text-center w-100 m-0">{titulo}</h1>
-      </div>
-
-      <hr />
-
-      <div>
-        <span className="form-label d-block mb-2">Formato</span>
-        <div className="d-flex align-items-center">
-          <div className="form-check form-check-inline">
-            <input
-              id="inputFLAC"
-              type="radio"
-              className="form-check-input"
-              name="Formato"
-              value="FLAC"
-              checked={format === "FLAC"}
-              onChange={() => setFormat("FLAC")}
-            />
-            <label className="form-check-label" htmlFor="inputFLAC">
-              FLAC
-            </label>
-          </div>
-
-          <div className="form-check form-check-inline">
-            <input
-              id="inputMP3"
-              type="radio"
-              className="form-check-input"
-              name="Formato"
-              value="MP3"
-              checked={format === "MP3"}
-              onChange={() => setFormat("MP3")}
-            />
-            <label className="form-check-label" htmlFor="inputMP3">
-              MP3
-            </label>
-          </div>
-
-          <button onClick={handleDownload} className="btn btn-success ms-auto">
-            <i className="bi bi-download"> Descargar álbumes seleccionados</i>
-          </button>
-        </div>
-      </div>
-
-      <div className="container py-5">
-        {albums.length !== 0 && (
-          <>
-            <h3>Albumes</h3>
-            <div className="row" style={{ rowGap: "10px" }}>
-              {albums.map((album) => (
-                <div
-                  className="album-list album-list-box card p-4"
-                  key={album.id}
-                >
-                  <div className="align-items-center row">
-                    <div className="col-auto">
-                      <div className="album-list-images">
-                        <img
-                          src={album.cover_medium}
-                          alt={album.title}
-                          className="cover-md img-thumbnail"
-                        />
-                      </div>
-                    </div>
-                    <div className="col-lg-5">
-                      <div className="album-list-content mt-3 mt-lg-0">
-                        <h5 className="mb-0">
-                          <span className="album-name">{album.title}</span>
-                        </h5>
-                        <p className="text-muted mb-0">
-                          {formatDate(album.release_date)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <input
-                    className="select-album"
-                    type="checkbox"
-                    id={`select-album-${album.id}`}
-                    onChange={(e) => {
-                      e.target.checked
-                        ? albumSelect.current.set(album.id, {
-                            id: album.id,
-                            title: album.title,
-                          })
-                        : albumSelect.current.delete(album.id);
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-        {eps.length !== 0 && (
-          <>
-            <h3 style={{ marginTop: "30px" }}>Eps</h3>
-            <div className="row" style={{ rowGap: "10px" }}>
-              {eps.map((album) => (
-                <div
-                  className="album-list album-list-box card p-4"
-                  key={album.id}
-                >
-                  <div className="align-items-center row">
-                    <div className="col-auto">
-                      <div className="album-list-images">
-                        <img
-                          src={album.cover_medium}
-                          alt=""
-                          className="cover-md img-thumbnail"
-                        />
-                      </div>
-                    </div>
-                    <div className="col-lg-5">
-                      <div className="album-list-content mt-3 mt-lg-0">
-                        <h5 className="mb-0">
-                          <span className="album-name">{album.title}</span>
-                        </h5>
-                        <p className="text-muted mb-0">
-                          {formatDate(album.release_date)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <input
-                    className="select-album"
-                    type="checkbox"
-                    id={`select-album-${album.id}`}
-                    onChange={(e) => {
-                      e.target.checked
-                        ? albumSelect.current.set(album.id, {
-                            id: album.id,
-                            title: album.title,
-                          })
-                        : albumSelect.current.delete(album.id);
-                    }}
-                    style={{ marginRight: "20px" }}
-                  />
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-        {singles.length !== 0 && (
-          <>
-            <h3 style={{ marginTop: "30px" }}>Singles</h3>
-            <div className="row" style={{ rowGap: "10px" }}>
-              {singles.map((album) => (
-                <div
-                  className="album-list album-list-box card p-4"
-                  key={album.id}
-                >
-                  <div className="align-items-center row">
-                    <div className="col-auto">
-                      <div className="album-list-images">
-                        <img
-                          src={album.cover_medium}
-                          alt=""
-                          className="cover-md img-thumbnail"
-                        />
-                      </div>
-                    </div>
-                    <div className="col-lg-5">
-                      <div className="album-list-content mt-3 mt-lg-0">
-                        <h5 className="mb-0">
-                          <span className="album-name">{album.title}</span>
-                        </h5>
-                        <p className="text-muted mb-0">
-                          {formatDate(album.release_date)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <input
-                    className="select-album"
-                    type="checkbox"
-                    id={`select-album-${album.id}`}
-                    onChange={(e) => {
-                      e.target.checked
-                        ? albumSelect.current.set(album.id, {
-                            id: album.id,
-                            title: album.title,
-                          })
-                        : albumSelect.current.delete(album.id);
-                    }}
-                    style={{ marginRight: "20px" }}
-                  />
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </>
-  );
-
-  return artista === "" ? searchArtist : selectAlbumfromArtist;
 }
