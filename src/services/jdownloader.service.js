@@ -246,8 +246,23 @@ class JDownloaderService {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(decrypt(error, this.deviceEncryptionToken));
+      const errorText = await response.text();
+      console.error(`JD Error Raw (${response.status}):`, errorText);
+
+      try {
+        // Intentamos desencriptar por si es un error de API estándar
+        const decryptedError = decrypt(errorText, this.deviceEncryptionToken);
+        throw new Error(decryptedError);
+      } catch (e) {
+        // Si falla el decrypt (por ejemplo, el error es "Forbidden"), lanzamos el error tal cual
+        // para evitar el crash de 'atob'
+        if (e.message.includes("atob") || e.name === "InvalidCharacterError") {
+          throw new Error(
+            `JDownloader Server Error: ${response.status} ${response.statusText}`
+          );
+        }
+        throw e; // Si fue otro error, lo relanzamos
+      }
     }
 
     const data = await response.text();

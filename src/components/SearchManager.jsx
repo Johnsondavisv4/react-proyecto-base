@@ -25,14 +25,7 @@ export default function SearchManager() {
         alert(`Error iniciando sesión en JDownloader: ${error}`);
       }
     };
-
     connect();
-
-    return () => {
-      JDownloaderService.disconnect().catch((error) => {
-        alert(`Error cerrando sesión en JDownloader: ${error}`);
-      });
-    };
   }, []);
 
   const handleBack = () => {
