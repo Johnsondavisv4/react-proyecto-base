@@ -218,9 +218,15 @@ class JDownloaderService {
 
   /**
    * Llama a una acción en un dispositivo específico
+   * AHORA CON AUTO-RECONEXIÓN SILENCIOSA
    */
-  async callAction(action, deviceId, params = null) {
+  async callAction(action, deviceId, params = null, retry = false) {
     if (!this.sessionToken || !this.deviceEncryptionToken) {
+      // Si no hay sesión, intentamos loguear antes de fallar (si es el primer intento)
+      if (!retry) {
+        await this.login();
+        return this.callAction(action, this.device, params, true);
+      }
       throw new Error("Not connected");
     }
 
@@ -247,21 +253,38 @@ class JDownloaderService {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`JD Error Raw (${response.status}):`, errorText);
+      // console.error(`JD Error Raw (${response.status}):`, errorText); // Comentado para no ensuciar consola
 
       try {
         // Intentamos desencriptar por si es un error de API estándar
         const decryptedError = decrypt(errorText, this.deviceEncryptionToken);
+
+        // === LÓGICA DE RECONEXIÓN ===
+        // Si el token es inválido y no hemos reintentado todavía...
+        if (decryptedError.includes("TOKEN_INVALID") && !retry) {
+          console.warn(
+            "Sesión JDownloader caducada. Renovando credenciales..."
+          );
+
+          // 1. Refrescamos la sesión
+          await this.login();
+
+          // 2. Reintentamos la MISMA acción recursivamente
+          // Importante: Usamos 'this.device' para asegurar que usamos el ID actualizado
+          return this.callAction(action, this.device, params, true);
+        }
+        // ============================
+
         throw new Error(decryptedError);
       } catch (e) {
-        // Si falla el decrypt (por ejemplo, el error es "Forbidden"), lanzamos el error tal cual
-        // para evitar el crash de 'atob'
+        // Si falló el decrypt o era otro error, lanzamos la excepción
+        // (Solo aquí saltaría el alert en tu componente, si falla la reconexión)
         if (e.message.includes("atob") || e.name === "InvalidCharacterError") {
           throw new Error(
             `JDownloader Server Error: ${response.status} ${response.statusText}`
           );
         }
-        throw e; // Si fue otro error, lo relanzamos
+        throw e;
       }
     }
 
