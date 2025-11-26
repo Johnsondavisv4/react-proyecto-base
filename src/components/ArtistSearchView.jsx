@@ -1,6 +1,6 @@
 import React from "react";
 
-export function ArtistSearchView({
+export default function ArtistSearchView({
   titulo,
   searchRef,
   handleSearchArtist,

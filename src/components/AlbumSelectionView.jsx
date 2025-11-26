@@ -9,7 +9,7 @@ const formatDate = (value) => {
   return `${dd}-${mm}-${yyyy}`;
 };
 
-export function AlbumSelectionView({
+export default function AlbumSelectionView({
   titulo,
   handleBack,
   format,

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import DeezerService from "@services/deezer.service";
 import JDownloaderService from "@services/jdownloader.service";
-import { ArtistSearchView } from "./ArtistSearchView";
-import { AlbumSelectionView } from "./AlbumSelectionView";
+import ArtistSearchView from "@components/ArtistSearchView";
+import AlbumSelectionView from "@components/AlbumSelectionView";
 
-export function SearchManager() {
+export default function SearchManager() {
   const [artistList, setArtistList] = useState([]);
   const [artista, setArtista] = useState("");
   const [albums, setAlbums] = useState([]);
