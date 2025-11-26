@@ -1,0 +1,15 @@
+services:
+  app:
+    container_name: jdownloader-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_JDOWNLOADER_EMAIL: ${REACT_APP_JDOWNLOADER_EMAIL}
+        REACT_APP_JDOWNLOADER_PASSWORD: ${REACT_APP_JDOWNLOADER_PASSWORD}
+        REACT_APP_JDOWNLOADER_DEVICE_NAME: ${REACT_APP_JDOWNLOADER_DEVICE_NAME}
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+    restart: unless-stopped
